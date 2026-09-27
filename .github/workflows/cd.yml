@@ -1,0 +1,124 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [main, dev, 'feature/**']
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: portofolio
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Generate app key
+        run: php artisan key:generate
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: portofolio
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Generate app key
+        run: php artisan key:generate
+
+      - name: Create SQLite database
+        run: touch database/database.sqlite
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Run tests
+        run: php artisan test
+
+  staging:
+    name: Staging
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simulasi deploy staging
+        run: |
+          echo "==> Menyiapkan lingkungan staging"
+          echo "==> Menyalin artefak build ke server staging"
+          echo "==> Staging siap diuji"
+
+  production:
+    name: Production
+    needs: staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+    steps:
+      - name: Deploy ke produksi (simulasi)
+        run: |
+          echo "# 1 · Kunci pintu — tampilkan halaman pemeliharaan"
+          echo "php artisan down --retry=60"
+          echo "# 2 · Ambil kode terbaru"
+          echo "git pull origin main"
+          echo "# 3 · Pasang dependensi (tanpa paket dev)"
+          echo "composer install --no-dev --optimize-autoloader"
+          echo "# 4 · Ubah skema basis data. --force = jangan tanya"
+          echo "php artisan migrate --force"
+          echo "# 5 · Bangun ulang cache dengan kode & config baru"
+          echo "php artisan config:cache"
+          echo "php artisan route:cache"
+          echo "php artisan view:cache"
+          echo "# 6 · Muat ulang pekerja antrean"
+          echo "php artisan queue:restart"
+          echo "# 7 · Buka pintu kembali"
+          echo "php artisan up"
