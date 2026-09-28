@@ -28,5 +28,6 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
+Route::get('/api/projects', [ProjectController::class, 'index']);
 
 require __DIR__.'/auth.php';
