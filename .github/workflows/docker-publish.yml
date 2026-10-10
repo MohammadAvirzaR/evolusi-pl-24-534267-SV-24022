@@ -26,5 +26,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/kepl2026/evolusi-pl-24-534267-sv-24022:${{ github.sha }}
-            ghcr.io/kepl2026/evolusi-pl-24-534267-sv-24022:latest
+            ghcr.io/mohammadavirzar/evolusi-pl-24-534267-sv-24022:${{ github.sha }}
+            ghcr.io/mohammadavirzar/evolusi-pl-24-534267-sv-24022:latest
