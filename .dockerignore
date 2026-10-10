@@ -1,0 +1,11 @@
+**/node_modules
+**/vendor
+.git
+**/.env
+**/.env.*
+!**/.env.example
+frontend/dist
+portofolio/storage/logs
+portofolio/storage/framework/cache
+portofolio/storage/framework/sessions
+portofolio/storage/framework/views
